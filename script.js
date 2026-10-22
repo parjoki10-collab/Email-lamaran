@@ -7,13 +7,17 @@
     salutation: "Kepada Yth. HRD {nama_perusahaan},",
     companyName: "",
     subjectTemplate: "{posisi}_{nama_pelamar}",
-    bodyTemplate: `Dengan hormat,
+    bodyTemplate: `Kepada Yth. Tim HRD,
 
-Saya bermaksud mengajukan lamaran pekerjaan untuk posisi {posisi} di perusahaan yang Bapak/Ibu pimpin.
+Dengan hormat,
 
-Sebagai bahan pertimbangan, saya lampirkan CV dan berkas pendukung lainnya. Besar harapan saya untuk mendapatkan kesempatan mengikuti proses seleksi di perusahaan yang Bapak/Ibu pimpin.
+Melalui email ini, saya bermaksud mengajukan lamaran pekerjaan untuk posisi {posisi} di perusahaan yang Bapak/Ibu pimpin.
 
-Demikian lamaran ini saya sampaikan. Atas perhatian dan kesempatan yang diberikan, saya ucapkan terima kasih.
+Sebagai bahan pertimbangan, bersama email ini saya lampirkan Curriculum Vitae (CV) yang memuat informasi mengenai data diri, pendidikan, dan kualifikasi saya. Saya siap mengikuti proses seleksi sesuai dengan ketentuan perusahaan.
+
+Besar harapan saya untuk mendapatkan kesempatan mengikuti tahap seleksi dan menjelaskan lebih lanjut mengenai kualifikasi saya.
+
+Demikian lamaran pekerjaan ini saya sampaikan. Terima kasih atas waktu dan perhatian Bapak/Ibu.
 
 Hormat saya,
 
