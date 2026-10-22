@@ -150,45 +150,33 @@ Hormat saya,
       showToast(`${label} berhasil disalin.`);
     } catch (_) { showToast("Tidak bisa menyalin otomatis. Silakan salin secara manual."); }
   }
-  function isMobileDevice() {
-    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  }
-
   function openGmail(item) {
+    const recipient = item.email || "";
     const subject = item.subject || "";
     const body = item.message || "";
-    const recipient = item.email || "";
 
     if (isMobileDevice()) {
-      // mailto: meminta sistem operasi membuka aplikasi email default.
-      // Jika Gmail ditetapkan sebagai aplikasi email default, Gmail akan terbuka
-      // dengan penerima, subjek, dan isi terisi. Website tidak dapat memaksa Gmail
-      // jika pengguna memilih aplikasi email lain atau browser memblokir perpindahan aplikasi.
-      const mailto = "mailto:" + encodeURIComponent(recipient)
-        + "?subject=" + encodeURIComponent(subject)
+      // Open the Gmail app in a separate browsing context. Do not navigate
+      // the generator tab to a custom URL scheme, so Safari can return to it.
+      const gmailAppUrl = "googlegmail://co?to=" + encodeURIComponent(recipient)
+        + "&subject=" + encodeURIComponent(subject)
         + "&body=" + encodeURIComponent(body);
-      window.location.href = mailto;
-      showToast("Membuka aplikasi email. Jika muncul pilihan aplikasi, pilih Gmail.");
+      const appTab = window.open(gmailAppUrl, "_blank");
+      if (!appTab) {
+        showToast("Browser memblokir pembukaan Gmail. Izinkan pop-up atau buka Gmail secara manual.");
+        return;
+      }
+      showToast("Gmail dibuka. Setelah mengirim, kembali ke tab generator untuk melanjutkan.");
       return;
     }
 
-    // Desktop/PC: gunakan Gmail Compose web.
     const params = new URLSearchParams({
-      view: "cm",
-      fs: "1",
-      tf: "cm",
-      to: recipient,
-      su: subject,
-      body: body
+      view: "cm", fs: "1", tf: "cm", to: recipient, su: subject, body: body
     });
     const url = "https://mail.google.com/mail/u/0/?" + params.toString();
     const opened = window.open(url, "_blank");
-    if (!opened) {
-      showToast("Tab baru diblokir. Izinkan pop-up browser lalu coba lagi.");
-    } else {
-      showToast("Gmail dibuka. Periksa pesan, lampirkan CV, lalu kirim manual.");
-    }
+    if (!opened) showToast("Tab baru diblokir. Izinkan pop-up browser lalu coba lagi.");
+    else showToast("Gmail dibuka. Periksa pesan, lampirkan CV, lalu kirim manual.");
   }
 
   function showToast(message) {
