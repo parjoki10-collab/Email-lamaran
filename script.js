@@ -151,60 +151,48 @@ Hormat saya,
     } catch (_) { showToast("Tidak bisa menyalin otomatis. Silakan salin secara manual."); }
   }
   function isMobileDevice() {
-
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-}
-
-function openGmail(item) {
-
-  const recipient = item.email || "";
-
-  const subject = item.subject || "";
-
-  const body = item.message || "";
-
-  if (isMobileDevice()) {
-
-    const gmailUrl =
-
-      "googlegmail://co?to=" + encodeURIComponent(recipient) +
-
-      "&subject=" + encodeURIComponent(subject) +
-
-      "&body=" + encodeURIComponent(body);
-
-    // Panggil Gmail langsung dari interaksi pengguna.
-
-    window.location.href = gmailUrl;
-
-    return;
-
+    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   }
 
-  const params = new URLSearchParams({
+  function openGmail(item) {
+    const recipient = item.email || "";
+    const subject = item.subject || "";
+    const body = item.message || "";
 
-    view: "cm",
+    if (isMobileDevice()) {
+      // Gmail app deep link. On supported devices this opens Gmail compose directly.
+      // Fall back to mailto only if the deep link cannot be handled; iOS may keep the
+      // user in Gmail web if app/deep-link handling is disabled.
+      const gmailAppUrl = "googlegmail://co?to=" + encodeURIComponent(recipient)
+        + "&subject=" + encodeURIComponent(subject)
+        + "&body=" + encodeURIComponent(body);
 
-    fs: "1",
+      // Give iOS the Gmail app URL directly from the user's tap.
+      window.location.href = gmailAppUrl;
+      showToast("Mencoba membuka compose di aplikasi Gmail… Jika tidak terbuka, pastikan Gmail terpasang.");
+      return;
+    }
 
-    to: recipient,
+    // Desktop/PC: Gmail Compose web.
+    const params = new URLSearchParams({
+      view: "cm",
+      fs: "1",
+      tf: "cm",
+      to: recipient,
+      su: subject,
+      body: body
+    });
+    const url = "https://mail.google.com/mail/u/0/?" + params.toString();
+    const opened = window.open(url, "_blank");
+    if (!opened) showToast("Tab baru diblokir. Izinkan pop-up browser lalu coba lagi.");
+    else showToast("Gmail dibuka. Periksa pesan, lampirkan CV, lalu kirim manual.");
+  }
 
-    su: subject,
-
-    body: body
-
-  });
-
-  window.open(
-
-    "https://mail.google.com/mail/?" + params.toString(),
-
-    "_blank"
-
-  );
-
-}
+  function showToast(message) {
+    const toast = $("toast"); toast.textContent = message; toast.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+  }
   $("emailInput").addEventListener("input", () => { parseInput(); $("inputMessage").textContent = ""; });
   $("generateBtn").addEventListener("click", () => {
     parseInput();
