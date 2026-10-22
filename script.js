@@ -150,39 +150,61 @@ Hormat saya,
       showToast(`${label} berhasil disalin.`);
     } catch (_) { showToast("Tidak bisa menyalin otomatis. Silakan salin secara manual."); }
   }
-  function openGmail(item) {
-    const recipient = item.email || "";
-    const subject = item.subject || "";
-    const body = item.message || "";
+  function isMobileDevice() {
 
-    if (isMobileDevice()) {
-      // Open the Gmail app in a separate browsing context. Do not navigate
-      // the generator tab to a custom URL scheme, so Safari can return to it.
-      const gmailAppUrl = "googlegmail://co?to=" + encodeURIComponent(recipient)
-        + "&subject=" + encodeURIComponent(subject)
-        + "&body=" + encodeURIComponent(body);
-      const appTab = window.open(gmailAppUrl, "_blank");
-      if (!appTab) {
-        showToast("Browser memblokir pembukaan Gmail. Izinkan pop-up atau buka Gmail secara manual.");
-        return;
-      }
-      showToast("Gmail dibuka. Setelah mengirim, kembali ke tab generator untuk melanjutkan.");
-      return;
-    }
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    const params = new URLSearchParams({
-      view: "cm", fs: "1", tf: "cm", to: recipient, su: subject, body: body
-    });
-    const url = "https://mail.google.com/mail/u/0/?" + params.toString();
-    const opened = window.open(url, "_blank");
-    if (!opened) showToast("Tab baru diblokir. Izinkan pop-up browser lalu coba lagi.");
-    else showToast("Gmail dibuka. Periksa pesan, lampirkan CV, lalu kirim manual.");
+}
+
+function openGmail(item) {
+
+  const recipient = item.email || "";
+
+  const subject = item.subject || "";
+
+  const body = item.message || "";
+
+  if (isMobileDevice()) {
+
+    const gmailUrl =
+
+      "googlegmail://co?to=" + encodeURIComponent(recipient) +
+
+      "&subject=" + encodeURIComponent(subject) +
+
+      "&body=" + encodeURIComponent(body);
+
+    // Panggil Gmail langsung dari interaksi pengguna.
+
+    window.location.href = gmailUrl;
+
+    return;
+
   }
 
-  function showToast(message) {
-    const toast = $("toast"); toast.textContent = message; toast.classList.add("show");
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
-  }
+  const params = new URLSearchParams({
+
+    view: "cm",
+
+    fs: "1",
+
+    to: recipient,
+
+    su: subject,
+
+    body: body
+
+  });
+
+  window.open(
+
+    "https://mail.google.com/mail/?" + params.toString(),
+
+    "_blank"
+
+  );
+
+}
   $("emailInput").addEventListener("input", () => { parseInput(); $("inputMessage").textContent = ""; });
   $("generateBtn").addEventListener("click", () => {
     parseInput();
