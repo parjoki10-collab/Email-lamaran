@@ -151,13 +151,26 @@ Hormat saya,
     } catch (_) { showToast("Tidak bisa menyalin otomatis. Silakan salin secara manual."); }
   }
   function openGmail(item) {
-    const url = "https://mail.google.com/mail/?view=cm&fs=1"
-      + "&to=" + encodeURIComponent(item.email)
-      + "&su=" + encodeURIComponent(item.subject)
-      + "&body=" + encodeURIComponent(item.message);
-    const opened = window.open(url, "_blank", "noopener,noreferrer");
-    if (!opened) showToast("Pop-up diblokir browser. Izinkan pop-up lalu coba lagi.");
-    else showToast("Gmail dibuka. Periksa pesan dan kirim secara manual.");
+    // URL compose Gmail dengan mode compose eksplisit; URLSearchParams menangani encoding.
+    const params = new URLSearchParams({
+      view: "cm",
+      fs: "1",
+      tf: "cm",
+      to: item.email,
+      su: item.subject,
+      body: item.message
+    });
+    const url = "https://mail.google.com/mail/u/0/?" + params.toString();
+
+    // Panggil langsung dari event klik agar tidak mudah dianggap pop-up tak diinginkan.
+    // Di Safari iOS, Gmail versi web terkadang tetap mengalihkan ke inbox; buka di tab baru
+    // lalu gunakan opsi "Buka di Gmail" jika browser menawarkan aplikasi Gmail.
+    const opened = window.open(url, "_blank");
+    if (!opened) {
+      showToast("Tab baru diblokir. Izinkan pop-up Safari atau buka tautan Gmail secara manual.");
+      return;
+    }
+    showToast("Halaman Gmail dibuka. Jika masuk inbox, coba buka tautan di Safari atau aplikasi Gmail.");
   }
   function showToast(message) {
     const toast = $("toast"); toast.textContent = message; toast.classList.add("show");
