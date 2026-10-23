@@ -4,10 +4,12 @@
   const DEFAULTS = {
     applicantName: "Yoga Dahnu",
     jobPosition: "Operator Produksi",
-    salutation: "Kepada Yth. Tim HRD,",
+    salutation: "Kepada Yth. HRD {nama_perusahaan},",
     companyName: "",
     subjectTemplate: "{posisi}_{nama_pelamar}",
-    bodyTemplate: `Dengan hormat,
+    bodyTemplate: `Kepada Yth. Tim HRD,
+
+Dengan hormat,
 
 Melalui email ini, saya bermaksud mengajukan lamaran pekerjaan untuk posisi {posisi} di perusahaan yang Bapak/Ibu pimpin.
 
@@ -29,13 +31,6 @@ Hormat saya,
   function loadSettings() {
     try {
       const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
-      // Update the previous built-in template for existing users, while preserving
-      // any template that the user had customized themselves.
-      const previousDefaultBody = 'Dengan hormat,\n\nSaya bermaksud mengajukan lamaran pekerjaan untuk posisi {posisi} di perusahaan yang Bapak/Ibu pimpin.\n\nSebagai bahan pertimbangan, saya lampirkan CV dan berkas pendukung lainnya. Besar harapan saya untuk mendapatkan kesempatan mengikuti proses seleksi di perusahaan yang Bapak/Ibu pimpin.\n\nDemikian lamaran ini saya sampaikan. Atas perhatian dan kesempatan yang diberikan, saya ucapkan terima kasih.\n\nHormat saya,\n\n{nama_pelamar}';
-      if (saved.bodyTemplate === previousDefaultBody) saved.bodyTemplate = DEFAULTS.bodyTemplate;
-      if (saved.salutation === "Kepada Yth. HRD {nama_perusahaan},") {
-        saved.salutation = DEFAULTS.salutation;
-      }
       Object.keys(DEFAULTS).forEach(key => {
         $(key).value = typeof saved[key] === "string" ? saved[key] : DEFAULTS[key];
       });
@@ -160,14 +155,50 @@ Hormat saya,
     } catch (_) { showToast("Tidak bisa menyalin otomatis. Silakan salin secara manual."); }
   }
   function openGmail(item) {
-    const url = "https://mail.google.com/mail/?view=cm&fs=1"
-      + "&to=" + encodeURIComponent(item.email)
-      + "&su=" + encodeURIComponent(item.subject)
-      + "&body=" + encodeURIComponent(item.message);
-    const opened = window.open(url, "_blank", "noopener,noreferrer");
-    if (!opened) showToast("Pop-up diblokir browser. Izinkan pop-up lalu coba lagi.");
-    else showToast("Gmail dibuka. Periksa pesan dan kirim secara manual.");
+    const recipient = item.email || "";
+    const subject = item.subject || "";
+    const body = item.message || "";
+
+    if (isMobileDevice()) {
+      const isAndroid = /Android/i.test(navigator.userAgent || "");
+
+      if (isAndroid) {
+        // Explicit Android intent targeting the installed Gmail app.
+        const intentUrl =
+          "intent://co?to=" + encodeURIComponent(recipient) +
+          "&subject=" + encodeURIComponent(subject) +
+          "&body=" + encodeURIComponent(body) +
+          "#Intent;scheme=googlegmail;package=com.google.android.gm;end";
+        window.location.href = intentUrl;
+        showToast("Membuka Gmail… Jika tidak terbuka, periksa izin membuka tautan aplikasi.");
+        return;
+      }
+
+      // iOS/iPadOS Gmail URL scheme.
+      const iosUrl =
+        "googlegmail://co?to=" + encodeURIComponent(recipient) +
+        "&subject=" + encodeURIComponent(subject) +
+        "&body=" + encodeURIComponent(body);
+      window.location.href = iosUrl;
+      showToast("Mencoba membuka aplikasi Gmail…");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      view: "cm", fs: "1", tf: "cm",
+      to: recipient, su: subject, body: body
+    });
+    const url = "https://mail.google.com/mail/u/0/?" + params.toString();
+    const opened = window.open(url, "_blank");
+    if (!opened) showToast("Tab baru diblokir. Izinkan pop-up browser lalu coba lagi.");
+    else showToast("Gmail dibuka. Periksa pesan, lampirkan CV, lalu kirim manual.");
   }
+
+  function isMobileDevice() {
+    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "")
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+
   function showToast(message) {
     const toast = $("toast"); toast.textContent = message; toast.classList.add("show");
     clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
