@@ -7,17 +7,13 @@
     salutation: "Kepada Yth. HRD {nama_perusahaan},",
     companyName: "",
     subjectTemplate: "{posisi}_{nama_pelamar}",
-    bodyTemplate: `Kepada Yth. Tim HRD,
+    bodyTemplate: `Dengan hormat,
 
-Dengan hormat,
+Saya bermaksud mengajukan lamaran pekerjaan untuk posisi {posisi} di perusahaan yang Bapak/Ibu pimpin.
 
-Melalui email ini, saya bermaksud mengajukan lamaran pekerjaan untuk posisi {posisi} di perusahaan yang Bapak/Ibu pimpin.
+Sebagai bahan pertimbangan, saya lampirkan CV dan berkas pendukung lainnya. Besar harapan saya untuk mendapatkan kesempatan mengikuti proses seleksi di perusahaan yang Bapak/Ibu pimpin.
 
-Sebagai bahan pertimbangan, bersama email ini saya lampirkan Curriculum Vitae (CV) yang memuat informasi mengenai data diri, pendidikan, dan kualifikasi saya. Saya siap mengikuti proses seleksi sesuai dengan ketentuan perusahaan.
-
-Besar harapan saya untuk mendapatkan kesempatan mengikuti tahap seleksi dan menjelaskan lebih lanjut mengenai kualifikasi saya.
-
-Demikian lamaran pekerjaan ini saya sampaikan. Terima kasih atas waktu dan perhatian Bapak/Ibu.
+Demikian lamaran ini saya sampaikan. Atas perhatian dan kesempatan yang diberikan, saya ucapkan terima kasih.
 
 Hormat saya,
 
@@ -158,29 +154,27 @@ Hormat saya,
     const recipient = item.email || "";
     const subject = item.subject || "";
     const body = item.message || "";
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPhone|iPad|iPod/i.test(ua)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/i.test(ua);
 
-    if (isMobileDevice()) {
-      const isAndroid = /Android/i.test(navigator.userAgent || "");
+    if (isIOS) {
+      const gmailUrl = "googlegmail://co?to=" + encodeURIComponent(recipient)
+        + "&subject=" + encodeURIComponent(subject)
+        + "&body=" + encodeURIComponent(body);
+      window.location.href = gmailUrl;
+      showToast("Membuka aplikasi Gmail…");
+      return;
+    }
 
-      if (isAndroid) {
-        // Explicit Android intent targeting the installed Gmail app.
-        const intentUrl =
-          "intent://co?to=" + encodeURIComponent(recipient) +
-          "&subject=" + encodeURIComponent(subject) +
-          "&body=" + encodeURIComponent(body) +
-          "#Intent;scheme=googlegmail;package=com.google.android.gm;end";
-        window.location.href = intentUrl;
-        showToast("Membuka Gmail… Jika tidak terbuka, periksa izin membuka tautan aplikasi.");
-        return;
-      }
-
-      // iOS/iPadOS Gmail URL scheme.
-      const iosUrl =
-        "googlegmail://co?to=" + encodeURIComponent(recipient) +
-        "&subject=" + encodeURIComponent(subject) +
-        "&body=" + encodeURIComponent(body);
-      window.location.href = iosUrl;
-      showToast("Mencoba membuka aplikasi Gmail…");
+    if (isAndroid) {
+      const intentUrl = "intent://co?to=" + encodeURIComponent(recipient)
+        + "&subject=" + encodeURIComponent(subject)
+        + "&body=" + encodeURIComponent(body)
+        + "#Intent;scheme=googlegmail;package=com.google.android.gm;end";
+      window.location.href = intentUrl;
+      showToast("Membuka aplikasi Gmail…");
       return;
     }
 
@@ -192,11 +186,6 @@ Hormat saya,
     const opened = window.open(url, "_blank");
     if (!opened) showToast("Tab baru diblokir. Izinkan pop-up browser lalu coba lagi.");
     else showToast("Gmail dibuka. Periksa pesan, lampirkan CV, lalu kirim manual.");
-  }
-
-  function isMobileDevice() {
-    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "")
-      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   }
 
   function showToast(message) {
